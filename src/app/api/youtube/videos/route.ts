@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getChannelVideos, getChannelByHandle, getChannelById } from "@/lib/youtube";
+import { getChannelVideos, getChannelByHandle } from "@/lib/youtube";
 import { db } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
@@ -8,19 +8,19 @@ export async function GET(req: NextRequest) {
   const channelId = req.nextUrl.searchParams.get("channelId");
 
   try {
-    let cid = channelId;
+    let cid: string | null = channelId;
 
     if (!cid && handle) {
       const ch = await getChannelByHandle(handle);
-      cid = ch?.id;
+      cid = ch?.id ?? null;
     }
 
     if (!cid && streamerId) {
       const s = db.getStreamer(streamerId);
-      cid = s?.youtubeChannelId;
+      cid = s?.youtubeChannelId ?? null;
       if (!cid && s?.youtubeHandle) {
         const ch = await getChannelByHandle(s.youtubeHandle);
-        cid = ch?.id;
+        cid = ch?.id ?? null;
         if (cid) {
           db.upsertStreamer({ id: streamerId, youtubeChannelId: cid });
         }
